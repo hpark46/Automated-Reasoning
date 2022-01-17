@@ -1,4 +1,4 @@
-from AtomicSentence import *
+from Literal import *
 from Biconditional import *
 from Conjunction import *
 from Disjunction import *
@@ -7,44 +7,51 @@ from Negation import *
 
 
 def to_cnf(KB):
-	index = len(KB)
-	cnf = []
 
-	for clauses in KB:
-		temp = []
-		while (check_clean(temp))
-		
-	
+	cnf = [] #clauses
 
+	for clause in KB:
+		result = [] 
+		result.append(clause)
 
+		while(len(result) != 0):
+			# print(str(result) + "result")
+			# print(str(cnf) + "cnf")
 
+			temp = result.pop(0)
 
+			if (check_clean(temp)):
+				cnf.append(temp)
 
+			else:
 
+				if (temp.__class__.__name__ == "Negation"):
+					n = break_negation(temp)
+					result.append(n)
 
+				elif (temp.__class__.__name__ == "Conjunction"):
+					a, b = break_conjunction(temp)
+					result.append(a)
+					result.append(b)
 
+				elif (temp.__class__.__name__ == "Disjunction"):
+					c = break_disjunction(temp)
+					result.append(c)
 
+				elif (temp.__class__.__name__ == "Implication"):
+					d = break_implication(temp)
+					result.append(d)
 
-def type_test(clause):
-	if (clause.__class__.__name__ == "Literal"):
-		return "Literal"
+				elif (temp.__class__.__name__ == "Biconditional"):
+					e = break_biconditional(temp)
+					result.append(e)
 
-	elif (clause.__class__.__name__ == "Negation"):
-		return "Literal"
+				else:
+					print(3)
+					print(temp.__class__.__name__)
 
-	elif (clause.__class__.__name__ == "Conjunction"):
-		return "Literal"
+	return cnf
 
-	elif (clause.__class__.__name__ == "Disjunction"):
-		return "Literal"
-
-	elif (clause.__class__.__name__ == "Implication"):
-		return "Literal"
-
-	elif (clause.__class__.__name__ == "Biconditional"):
-		return "Literal"
-
-	else:
 
 
 
@@ -55,7 +62,7 @@ def type_test(clause):
 # iterate throguh clause and check if its all disjunction or negative
 # append all literals of the clause into an array + get rid of negative
 
-# Negation: sentence_f only
+# Negation: contains sentence_f (lhs) only
 
 def check_clean(clause):
 	
@@ -64,9 +71,12 @@ def check_clean(clause):
 		return True
 
 	elif (clause.__class__.__name__ == "Negation"):
-		return check_clean(clause.sentence_f)
+		if (clause.sentence_f.__class__.__name__ != "Literal"):
+			return False
+		else:
+			return True
 
-	elif (clause.__class__.__name__ == "Disjunction")
+	elif (clause.__class__.__name__ == "Disjunction"):
 		return check_clean(clause.sentence_f) and check_clean(clause.sentence_b)
 
 	else:
@@ -80,30 +90,25 @@ def break_biconditional(clause):
 	return Conjunction(Implication(clause.sentence_f, clause.sentence_b), Implication(clause.sentence_b, clause.sentence_f))
 
 def break_implication(clause):
-	return Disjunction(Negation(clause.sentence_f), clause.sentence_b)
+	return Disjunction(break_negation(Negation(clause.sentence_f)), clause.sentence_b)
 
 # does not work for clause containing implication/biconditional
 def break_negation(clause):
 
 	child = clause.sentence_f
 
-	if (child.__class__.__name__ == "Conjunction"):
-		return Disjunction(Negation(child.sentence_f), Negation(child.sentence_b))
+	if (child.__class__.__name__ == "Conjunction"): #de morgan
+		return Disjunction(break_negation(Negation(child.sentence_f)), break_negation(Negation(child.sentence_b)))#, 1 # change made
 
-	elif (child.__class__.__name__ == "Disjunction"):
-		return Conjunction(Negation(child.sentence_f), Negation(child.sentence_b))
+	elif (child.__class__.__name__ == "Disjunction"): #de morgan
+		return Conjunction(break_negation(Negation(child.sentence_f)), break_negation(Negation(child.sentence_b)))#, 1 # change made
 
-	elif (child.__class__.__name__ == "Negation"):
-		return child.sentence_f
+	elif (child.__class__.__name__ == "Negation"): #double negation 
+		return child.sentence_f#, 1 #change made
 
 	else:
-		print(child.symbol) #will make error if its not literal (for debugging)
-		if (child.value == True):
-			child.value = False
-		else:
-			child.value = True
-
-		return child
+		# print(4)
+		return clause#, 0 #no change made
 
 
 def break_conjunction(clause):
@@ -111,10 +116,16 @@ def break_conjunction(clause):
 
 def break_disjunction(clause):
 	if (clause.sentence_f.__class__.__name__ == "Conjunction" and clause.sentence_b.__class__.__name__ != "Conjunction"):
-		return Conjunction(Disjunction(clause.sentence_f.sentence_f, clause.sentence_b), Disjunction(clause.sentence_f.sentence_b, clause.sentence_b))
+		return Conjunction(Disjunction(clause.sentence_f.sentence_f, clause.sentence_b), Disjunction(clause.sentence_f.sentence_b, clause.sentence_b))#, 1
 
-	else: #(clause.sentence_b.__class__.__name__ == "Conjunction")
-		return Conjunction(Disjunction(clause.sentence_f, clause.sentence_b.sentence_f), Disjunction(clause.sentence_f, clause.sentence_b.sentence_b))
+	elif (clause.sentence_b.__class__.__name__ == "Conjunction"):
+		return Conjunction(Disjunction(clause.sentence_f, clause.sentence_b.sentence_f), Disjunction(clause.sentence_f, clause.sentence_b.sentence_b))#, 1
+
+	else:
+		# print(str(clause.sentence_f.__class__.__name__) + str(clause.sentence_b.__class__.__name__) + "5")
+		print(5)
+
+		return clause#, 0 #no change
 
 
 
@@ -124,22 +135,32 @@ def break_disjunction(clause):
 
 
 if __name__ == "__main__":
-	temp = [1,2,2,4,5]
-	to_cnf(temp)
+	KB = []
+	s1 = Literal("P1,1")
+	s2 = Literal("P1,2")
+	s3 = Literal("P2,1")
+	s4 = Literal("P2,2")
+	s5 = Literal("P3,1")
+	s6 = Literal("B1,1")
+	s7 = Literal("B2,1")
 
 
 
+	KB.append(Negation(s1))												#r1
+	KB.append(Biconditional(s6, Disjunction(s2, s3)))					#r2
+	KB.append(Biconditional(s7, Disjunction(s1, Disjunction(s4, s5))))	#r3
+	KB.append(Negation(s6))												#r4
+	KB.append(s7)														#r5
 
 
-# cnf: array of clauses
-# clause: array of literals
-# literal: symbol +/-
+	temp = to_cnf(KB)
+	# print(temp)
+	# print("**********")
 
 
+	temp_two = (temp[2].sentence_b.symbol, 0)
+	print(temp_two)
+
+	
 
 
-# break biconditional
-# break implication
-# move negation inward
-# negate
-# distribute Or over And

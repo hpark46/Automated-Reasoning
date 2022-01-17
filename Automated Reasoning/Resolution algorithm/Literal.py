@@ -1,6 +1,6 @@
 class Literal:
 
-	 def __init__(self, symbol, value= True):
+	 def __init__(self, symbol, value= None):
 	 	self.symbol = symbol
 	 	self.value = value
 
