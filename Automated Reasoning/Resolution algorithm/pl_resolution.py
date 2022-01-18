@@ -10,29 +10,46 @@ def pl_resolution(background, query):
 	kb = simplifier(to_cnf(background))
 	new = []
 
+	return resolution_loop(kb, new)
+	
 
+
+def resolution_loop(kb, new):
+	# print("KB_Main")
+	# print(kb)
 
 	for i in range(0,len(kb)):
 		for clause in kb[i+1:]:
 			resolvent = pl_resolve(kb[i], clause)
 
-			if (resolvent == []):
+			# print("Resolvent_Main")
+			print(resolvent) # show generation of resolvents
+
+			if (resolvent == [-1]):
 				return True
 
-			new = new + resolvent
+			for element in resolvent:
+				new.append(element)
 
-	if ()
+	if (is_subset(new, kb)):
+		return False
+
+	for new_gen in new:
+		if(new_gen not in kb):
+			kb.append(new_gen)
+
+	return resolution_loop(kb, [])
 
 
 
 
 
+def is_subset(new, kb):
 
-
-
-
-
-
+	for element in new:
+		if (element not in kb):
+			return False
+	return True
 
 
 
@@ -42,11 +59,14 @@ def pl_resolution(background, query):
 
 
 def pl_resolve(ci, cj):
+	# print("****")
+	# print(ci)
+	# print(cj)
 
 	if (len(ci) == len(cj) == 1):
-		if (ci[0] == cj[0] and ci[1] != cj[1]):
-			return []
-
+		if (ci[0][0] == cj[0][0] and ci[0][1] != cj[0][1]):
+			# print(9999999)
+			return [-1]
 
 
 	result = []
@@ -58,8 +78,11 @@ def pl_resolve(ci, cj):
 	for j in cj:
 		together.append(j)
 
+	together = list(set(together))
 	together.sort()
-	together = set(together)
+
+	# print("------")
+	# print(together)
 
 	contrary = [] 						
 	for i in range(1,len(together)-1):
@@ -71,10 +94,10 @@ def pl_resolve(ci, cj):
 
 	subsets = []
 	for i in range(1, len(contrary)+1):
-		subset = subset + list(itertools.combinations(contrary, i))
+		subsets = subsets + list(itertools.combinations(contrary, i))
 
 
-	for subset in subset:
+	for subset in subsets:
 		temp = copy.deepcopy(list(together))
 		for symbols in subset:
 			temp.remove((symbols, 1))
@@ -82,22 +105,6 @@ def pl_resolve(ci, cj):
 		result.append(temp)
 
 	return result
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -169,7 +176,7 @@ if __name__ == "__main__":
 	s7 = Literal("B2,1")
 
 
-
+	KB.append(Negation(s6))
 	# KB.append(Negation(s1))												#r1
 	KB.append(Biconditional(s6, Disjunction(s2, s3)))					#r2
 	# KB.append(Biconditional(s7, Disjunction(s1, Disjunction(s4, s5))))	#r3
@@ -177,31 +184,7 @@ if __name__ == "__main__":
 	# KB.append(s7)														#r5
 
 
-	# temp = to_cnf(KB)
-	# print(temp)
-	# print("**********")
-	# temp_two = simplifier(temp)
-
-
-
-
-	# temp_two = (temp[2].sentence_b.symbol, 0)
-	# print(temp_two)
-	# print(temp_two)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	print(pl_resolution(KB, Negation(s2)))
 
 
 
