@@ -1,2 +1,2 @@
 # Automated Reasoning
- Will be adding truth table enumeration, PL-resolution and more
+ Truth table enumeration and PL-Resolution Algorithm
